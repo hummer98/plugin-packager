@@ -1,0 +1,15 @@
+{
+  "name": "plugin-packager",
+  "version": "1.0.0",
+  "description": "Convert Claude Code skill repositories into dual-distributable packages (Plugin + Agent Skills)",
+  "author": {
+    "name": "hummer98",
+    "url": "https://github.com/hummer98"
+  },
+  "homepage": "https://github.com/hummer98/plugin-packager",
+  "repository": "https://github.com/hummer98/plugin-packager",
+  "license": "MIT",
+  "keywords": ["plugin", "packaging", "distribution", "agent-skills"],
+  "skills": "./skills/",
+  "commands": "./commands/"
+}

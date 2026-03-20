@@ -1,0 +1,22 @@
+{
+  "name": "hummer98-plugins",
+  "owner": {
+    "name": "hummer98",
+    "url": "https://github.com/hummer98"
+  },
+  "metadata": {
+    "description": "Claude Code plugins by hummer98",
+    "version": "1.0"
+  },
+  "plugins": [
+    {
+      "name": "plugin-packager",
+      "source": ".",
+      "description": "Convert Claude Code skill repositories into dual-distributable packages (Plugin + Agent Skills)",
+      "version": "1.0.0",
+      "author": {
+        "name": "hummer98"
+      }
+    }
+  ]
+}
