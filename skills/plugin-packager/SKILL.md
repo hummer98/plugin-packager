@@ -176,12 +176,55 @@ cd <repo>
 - commands/hooks がある場合: Plugin を「Recommended」にする
 - install.sh がない場合: Manual Install セクションを省略する
 
-### ステップ 5: 互換性チェックレポート
+### ステップ 5: マニフェストバリデーション
 
-変換後に以下のレポートを出力する:
+生成した plugin.json と marketplace.json を `/plugin install` のバリデーションに通る形式か検証する。
+
+#### 5a. plugin.json のバリデーション
+
+以下を **プログラム的に** 検証する（jq でパース）:
+
+```bash
+# plugin.json を読み込んで検証
+jq -e '.name and .version and .description and (.author | type == "object") and .author.name' .claude-plugin/plugin.json
+```
+
+| チェック項目 | 条件 | 失敗時のエラー |
+|-------------|------|--------------|
+| `name` | 文字列で存在 | `name: Invalid input` |
+| `version` | 文字列で存在 | `version: Invalid input` |
+| `description` | 文字列で存在 | `description: Invalid input` |
+| `author` | **オブジェクト**で存在 | `author: Invalid input: expected object, received string` |
+| `author.name` | 文字列で存在 | `author: Invalid input` |
+| `description` が英語 | ASCII 文字が主体 | （バリデーションは通るが推奨） |
+
+#### 5b. marketplace.json のバリデーション
+
+```bash
+# marketplace.json を読み込んで検証
+jq -e '.name and (.owner | type == "object") and .owner.name and (.plugins | type == "array") and (.plugins | length > 0)' .claude-plugin/marketplace.json
+```
+
+| チェック項目 | 条件 | 失敗時のエラー |
+|-------------|------|--------------|
+| `name` | 文字列で存在 | `name: Invalid input: expected string, received undefined` |
+| `owner` | オブジェクトで存在 | `owner: Invalid input: expected object, received undefined` |
+| `owner.name` | 文字列で存在 | パース失敗 |
+| `plugins` | 配列で存在 | `plugins: Invalid input: expected array, received undefined` |
+| `catalog` が不在 | `catalog` フィールドがない | 旧式フォーマットは認識されない |
+
+#### 5c. 互換性チェックレポート
+
+バリデーション結果を含めて以下のレポートを出力する:
 
 ```
 === 互換性チェックレポート ===
+
+マニフェストバリデーション:
+  ✓ plugin.json: 全フィールド正常
+  ✓ marketplace.json: 全フィールド正常
+  ✓ author フィールドがオブジェクト形式
+  ✓ description が英語
 
 Plugin 互換性: OK
   ✓ .claude-plugin/plugin.json が存在
@@ -201,6 +244,7 @@ Agent Skills 互換性: Partial
 ```
 
 **判定基準**:
+- マニフェストバリデーション: jq での検証が全て通れば OK。1つでも失敗すれば修正を促す
 - Plugin 互換性: plugin.json が存在し、skills/commands パスが正しければ OK
 - Agent Skills 互換性:
   - OK: skills のみで SKILL.md の frontmatter が正しい
