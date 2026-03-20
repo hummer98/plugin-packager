@@ -69,57 +69,64 @@ Claude Code のスキル/コマンド/hooks を含むリポジトリを、Claude
 
 #### 3b. plugin.json の生成
 
-`.claude-plugin/plugin.json` を以下の形式で生成する:
+`.claude-plugin/plugin.json` を以下の形式で **厳密に** 生成する:
 
 ```json
 {
   "name": "<リポジトリ名>",
   "version": "1.0.0",
-  "description": "<リポジトリの説明>",
+  "description": "<English description of the plugin>",
   "author": {
-    "name": "<GitHub ユーザー名>",
-    "url": "https://github.com/<ユーザー名>"
+    "name": "<GitHub ユーザー名>"
   },
   "homepage": "https://github.com/<ユーザー名>/<リポジトリ名>",
   "repository": "https://github.com/<ユーザー名>/<リポジトリ名>",
   "license": "MIT",
-  "keywords": ["<関連キーワード>"],
-  "skills": "./skills/",
-  "commands": "./commands/"
+  "keywords": ["<関連キーワード>"]
 }
 ```
 
+**バリデーション要件（必ず遵守）**:
+- `author` は **必ずオブジェクト** `{"name": "..."}` にすること。**文字列は不可**（`/plugin install` でバリデーションエラーになる）
+- `description` は **英語** で記述すること（国際的なマーケットプレイスで表示されるため）
 - `commands` フィールドはコマンドが存在する場合のみ含める
-- `hooks` フィールドは hooks が存在する場合のみ含める
+- `hooks` フィールドは hooks が存在する場合のみ含める（例: `"hooks": {"SessionStart": [...]}`)
 
 #### 3c. marketplace.json の生成
 
-`.claude-plugin/marketplace.json` を以下の形式で生成する:
+`.claude-plugin/marketplace.json` を以下の形式で **厳密に** 生成する:
+
+**重要**: `catalog` 形式（旧式）は使用禁止。必ず `plugins` 配列形式で生成すること。
 
 ```json
 {
-  "name": "<ユーザー名>-plugins",
+  "name": "<ユーザー名>-<リポジトリ名>",
   "owner": {
     "name": "<ユーザー名>",
-    "url": "https://github.com/<ユーザー名>"
-  },
-  "metadata": {
-    "description": "Claude Code plugins by <ユーザー名>",
-    "version": "1.0"
+    "email": "github@<ユーザー名>"
   },
   "plugins": [
     {
       "name": "<プラグイン名>",
-      "source": ".",
-      "description": "<プラグインの説明>",
+      "source": "./",
+      "description": "<English description>",
       "version": "1.0.0",
       "author": {
         "name": "<ユーザー名>"
-      }
+      },
+      "repository": "https://github.com/<ユーザー名>/<リポジトリ名>",
+      "license": "MIT"
     }
   ]
 }
 ```
+
+**バリデーション要件（必ず遵守）**:
+- トップレベルに `name`, `owner`, `plugins` の 3 フィールドが **必須**（欠けると `/plugin marketplace add` が失敗する）
+- `catalog` 形式 (`catalog.skills`, `catalog.commands`) は **使用禁止**（旧式で認識されない）
+- `owner` は `name` フィールドが必須。`email` は任意
+- `plugins[].author` は **必ずオブジェクト** `{"name": "..."}` にすること
+- `description` は **英語** で記述すること
 
 #### 3d. install.sh のパス更新
 
@@ -221,8 +228,8 @@ description: >
 |-----------|------|------|
 | `name` | ○ | プラグイン名（リポジトリ名と一致推奨） |
 | `version` | ○ | セマンティックバージョニング |
-| `description` | ○ | プラグインの説明 |
-| `author` | ○ | `{ "name": "...", "url": "..." }` |
+| `description` | ○ | プラグインの説明（**英語必須**） |
+| `author` | ○ | `{ "name": "..." }` **（オブジェクト必須。文字列は不可）** |
 | `repository` | ○ | GitHub リポジトリ URL |
 | `license` | △ | ライセンス識別子（MIT 推奨） |
 | `keywords` | △ | 検索用キーワード配列 |
