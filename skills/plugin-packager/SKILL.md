@@ -125,6 +125,7 @@ Claude Code のスキル/コマンド/hooks を含むリポジトリを、Claude
 - トップレベルに `name`, `owner`, `plugins` の 3 フィールドが **必須**（欠けると `/plugin marketplace add` が失敗する）
 - `catalog` 形式 (`catalog.skills`, `catalog.commands`) は **使用禁止**（旧式で認識されない）
 - `owner` は `name` フィールドが必須。`email` は任意
+- `plugins[].source` は **`"./"` を使用**すること。**`"."` は不可**（`/plugin install` で `source: Invalid input` になる）
 - `plugins[].author` は **必ずオブジェクト** `{"name": "..."}` にすること
 - `description` は **英語** で記述すること
 
@@ -203,6 +204,9 @@ jq -e '.name and .version and .description and (.author | type == "object") and 
 ```bash
 # marketplace.json を読み込んで検証
 jq -e '.name and (.owner | type == "object") and .owner.name and (.plugins | type == "array") and (.plugins | length > 0)' .claude-plugin/marketplace.json
+
+# source フィールドの値を検証（"." は不可、"./" が必須）
+jq -e '(.plugins // []) | all(.source != ".")' .claude-plugin/marketplace.json
 ```
 
 | チェック項目 | 条件 | 失敗時のエラー |
@@ -211,6 +215,7 @@ jq -e '.name and (.owner | type == "object") and .owner.name and (.plugins | typ
 | `owner` | オブジェクトで存在 | `owner: Invalid input: expected object, received undefined` |
 | `owner.name` | 文字列で存在 | パース失敗 |
 | `plugins` | 配列で存在 | `plugins: Invalid input: expected array, received undefined` |
+| `plugins[].source` | `"."` でないこと | `source: Invalid input`（`"."` は不可、`"./"` を使用すること） |
 | `catalog` が不在 | `catalog` フィールドがない | 旧式フォーマットは認識されない |
 
 #### 5c. 互換性チェックレポート
@@ -225,6 +230,7 @@ jq -e '.name and (.owner | type == "object") and .owner.name and (.plugins | typ
   ✓ marketplace.json: 全フィールド正常
   ✓ author フィールドがオブジェクト形式
   ✓ description が英語
+  ✓ source フィールドが "./"（"." は不可）
 
 Plugin 互換性: OK
   ✓ .claude-plugin/plugin.json が存在

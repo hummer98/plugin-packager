@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "plugin-packager",
-      "source": ".",
+      "source": "./",
       "description": "Convert Claude Code skill repositories into dual-distributable packages (Plugin + Agent Skills)",
       "version": "1.0.0",
       "author": {
